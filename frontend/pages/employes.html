@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HorizonR — Employés</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <div id="sidebar-container"></div>
+
+      <div class="main-content">
+        <header class="topbar">
+          <span class="topbar-title">Gestion des employés</span>
+        </header>
+
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h1>Employés</h1>
+              <p>Gestion des collaborateurs NovaTech Solutions</p>
+            </div>
+            <button class="btn btn-primary" id="btn-nouvel-employe">
+              + Nouvel employé
+            </button>
+          </div>
+
+          <!-- Filtres -->
+          <div class="card mb-2">
+            <div class="card-body">
+              <div class="form-grid">
+                <div class="form-group" style="margin: 0">
+                  <input
+                    class="form-control"
+                    type="text"
+                    id="filtre-nom"
+                    placeholder="Rechercher par nom ou prénom…"
+                  />
+                </div>
+                <div class="form-group" style="margin: 0">
+                  <select class="form-control" id="filtre-service">
+                    <option value="">Tous les services</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin: 0">
+                  <select class="form-control" id="filtre-role">
+                    <option value="">Tous les rôles</option>
+                    <option value="ADMIN">Admin</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="EMPLOYE">Employé</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tableau -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title" id="nb-employes">Employés</span>
+            </div>
+            <div class="table-wrapper">
+              <table id="table-employes">
+                <thead>
+                  <tr>
+                    <th>Nom</th>
+                    <th>Poste</th>
+                    <th>Service</th>
+                    <th>Rôle</th>
+                    <th>Embauche</th>
+                    <th>Solde CP</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-employes">
+                  <tr>
+                    <td colspan="8" class="text-center text-muted">
+                      Chargement…
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Modal création / édition -->
+    <div class="modal-overlay" id="modal-employe">
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-title" id="modal-employe-titre"
+            >Nouvel employé</span
+          >
+          <button class="btn btn-icon btn-outline" id="btn-fermer-modal">
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="form-employe">
+            <input type="hidden" id="employe-id" />
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Nom *</label>
+                <input class="form-control" type="text" id="emp-nom" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Prénom *</label>
+                <input
+                  class="form-control"
+                  type="text"
+                  id="emp-prenom"
+                  required
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email *</label>
+              <input
+                class="form-control"
+                type="email"
+                id="emp-email"
+                required
+              />
+            </div>
+            <div class="form-group" id="group-mdp">
+              <label class="form-label">Mot de passe *</label>
+              <input
+                class="form-control"
+                type="password"
+                id="emp-mdp"
+                placeholder="Minimum 8 caractères"
+              />
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Téléphone</label>
+                <input class="form-control" type="text" id="emp-telephone" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Date d'embauche</label>
+                <input
+                  class="form-control"
+                  type="date"
+                  id="emp-date-embauche"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Poste</label>
+              <input class="form-control" type="text" id="emp-poste" />
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Service</label>
+                <select class="form-control" id="emp-service"></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Rôle *</label>
+                <select class="form-control" id="emp-role" required></select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Solde congés (jours)</label>
+              <input
+                class="form-control"
+                type="number"
+                id="emp-solde"
+                min="0"
+                step="0.5"
+                value="25"
+              />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" id="btn-annuler-modal">
+            Annuler
+          </button>
+          <button class="btn btn-primary" id="btn-sauvegarder-employe">
+            Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/toast.js"></script>
+    <script src="../js/employes.js"></script>
+  </body>
+</html>
