@@ -1,0 +1,19 @@
+# Environnement
+.env
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Logs
+*.log
+
+# Coverage Jest
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker volumes locaux
+mysql_data/
