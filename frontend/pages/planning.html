@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HorizonR — Planning</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <div id="sidebar-container"></div>
+
+      <div class="main-content">
+        <header class="topbar">
+          <span class="topbar-title">Planning</span>
+          <div class="topbar-actions">
+            <button class="btn btn-outline btn-sm" id="btn-semaine-prec">
+              ◀ Précédent
+            </button>
+            <span id="label-semaine" class="fw-600"></span>
+            <button class="btn btn-outline btn-sm" id="btn-semaine-suiv">
+              Suivant ▶
+            </button>
+          </div>
+        </header>
+
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h1>Planning</h1>
+              <p id="planning-subtitle">Vue hebdomadaire des événements</p>
+            </div>
+            <button class="btn btn-primary hidden" id="btn-nouvel-event">
+              + Événement
+            </button>
+          </div>
+
+          <!-- Légende types -->
+          <div class="card mb-2">
+            <div
+              class="card-body"
+              style="
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+                font-size: 0.8rem;
+              "
+            >
+              <span
+                ><span
+                  style="
+                    display: inline-block;
+                    width: 12px;
+                    height: 12px;
+                    background: #dbeafe;
+                    border-radius: 3px;
+                    margin-right: 4px;
+                    vertical-align: middle;
+                  "
+                ></span
+                >Télétravail</span
+              >
+              <span
+                ><span
+                  style="
+                    display: inline-block;
+                    width: 12px;
+                    height: 12px;
+                    background: #fef3c7;
+                    border-radius: 3px;
+                    margin-right: 4px;
+                    vertical-align: middle;
+                  "
+                ></span
+                >Déplacement</span
+              >
+              <span
+                ><span
+                  style="
+                    display: inline-block;
+                    width: 12px;
+                    height: 12px;
+                    background: #dcfce7;
+                    border-radius: 3px;
+                    margin-right: 4px;
+                    vertical-align: middle;
+                  "
+                ></span
+                >Formation</span
+              >
+              <span
+                ><span
+                  style="
+                    display: inline-block;
+                    width: 12px;
+                    height: 12px;
+                    background: #ede9fe;
+                    border-radius: 3px;
+                    margin-right: 4px;
+                    vertical-align: middle;
+                  "
+                ></span
+                >Réunion</span
+              >
+              <span
+                ><span
+                  style="
+                    display: inline-block;
+                    width: 12px;
+                    height: 12px;
+                    background: #f1f5f9;
+                    border-radius: 3px;
+                    margin-right: 4px;
+                    vertical-align: middle;
+                  "
+                ></span
+                >Autre</span
+              >
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-wrapper">
+              <div id="planning-container">
+                <p class="text-center text-muted" style="padding: 2rem">
+                  Chargement…
+                </p>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Modal nouvel événement -->
+    <div class="modal-overlay" id="modal-event">
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-title">Nouvel événement</span>
+          <button class="btn btn-icon btn-outline" id="btn-fermer-modal-event">
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="form-event">
+            <div class="form-group">
+              <label class="form-label">Employé *</label>
+              <select class="form-control" id="event-employe" required></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Titre *</label>
+              <input
+                class="form-control"
+                type="text"
+                id="event-titre"
+                required
+              />
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Début *</label>
+                <input
+                  class="form-control"
+                  type="datetime-local"
+                  id="event-debut"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Fin *</label>
+                <input
+                  class="form-control"
+                  type="datetime-local"
+                  id="event-fin"
+                  required
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Type</label>
+              <select class="form-control" id="event-type">
+                <option value="TELETRAVAIL">Télétravail</option>
+                <option value="DEPLACEMENT">Déplacement</option>
+                <option value="FORMATION">Formation</option>
+                <option value="REUNION">Réunion</option>
+                <option value="AUTRE" selected>Autre</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea
+                class="form-control"
+                id="event-description"
+                rows="2"
+              ></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" id="btn-annuler-event">
+            Annuler
+          </button>
+          <button class="btn btn-primary" id="btn-sauvegarder-event">
+            Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/toast.js"></script>
+    <script src="../js/planning.js"></script>
+  </body>
+</html>
