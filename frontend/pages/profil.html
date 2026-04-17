@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HorizonR — Mon profil</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <div id="sidebar-container"></div>
+
+      <div class="main-content">
+        <header class="topbar">
+          <span class="topbar-title">Mon profil</span>
+        </header>
+
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h1>Mon profil</h1>
+              <p>Informations personnelles et paramètres</p>
+            </div>
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 1rem;
+              max-width: 900px;
+            "
+          >
+            <!-- Infos personnelles -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Informations</span>
+              </div>
+              <div class="card-body" id="profil-infos">
+                <p class="text-muted">Chargement…</p>
+              </div>
+            </div>
+
+            <!-- Solde congés -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Solde de congés</span>
+              </div>
+              <div class="card-body" style="text-align: center; padding: 2rem">
+                <div
+                  style="
+                    font-size: 3rem;
+                    font-weight: 800;
+                    color: var(--primary);
+                  "
+                  id="solde-val"
+                >
+                  —
+                </div>
+                <div class="text-muted mt-1">jours disponibles</div>
+              </div>
+            </div>
+
+            <!-- Mes dernières demandes -->
+            <div class="card" style="grid-column: 1/-1">
+              <div class="card-header">
+                <span class="card-title">Mes dernières demandes de congé</span>
+                <a href="conges.html" class="btn btn-outline btn-sm"
+                  >Voir tout</a
+                >
+              </div>
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Du</th>
+                      <th>Au</th>
+                      <th>Jours</th>
+                      <th>Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbody-mes-conges">
+                    <tr>
+                      <td colspan="5" class="text-center text-muted">
+                        Chargement…
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Changer mot de passe -->
+            <div class="card" style="grid-column: 1/-1; max-width: 480px">
+              <div class="card-header">
+                <span class="card-title">Changer le mot de passe</span>
+              </div>
+              <div class="card-body">
+                <form id="form-mdp">
+                  <div class="form-group">
+                    <label class="form-label">Mot de passe actuel</label>
+                    <input
+                      class="form-control"
+                      type="password"
+                      id="mdp-ancien"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Nouveau mot de passe</label>
+                    <input
+                      class="form-control"
+                      type="password"
+                      id="mdp-nouveau"
+                      required
+                      minlength="8"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label"
+                      >Confirmer le nouveau mot de passe</label
+                    >
+                    <input
+                      class="form-control"
+                      type="password"
+                      id="mdp-confirm"
+                      required
+                      minlength="8"
+                    />
+                  </div>
+                  <button class="btn btn-primary" type="submit">
+                    Mettre à jour
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/toast.js"></script>
+    <script src="../js/profil.js"></script>
+  </body>
+</html>
