@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HorizonR — Connexion</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="login-page">
+      <div class="login-card">
+        <div class="login-logo">
+          <div class="logo-big">HorizonR</div>
+          <div class="logo-company">NovaTech Solutions</div>
+        </div>
+        <h2 class="login-title">Connexion</h2>
+
+        <div id="login-error" class="login-error"></div>
+
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label" for="email">Adresse e-mail</label>
+            <input
+              class="form-control"
+              type="email"
+              id="email"
+              placeholder="prenom.nom@novatech.fr"
+              required
+              autocomplete="username"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="password">Mot de passe</label>
+            <input
+              class="form-control"
+              type="password"
+              id="password"
+              placeholder="••••••••"
+              required
+              autocomplete="current-password"
+            />
+          </div>
+          <button
+            class="btn btn-primary w-full mt-2"
+            type="submit"
+            id="btn-login"
+          >
+            Se connecter
+          </button>
+        </form>
+
+        <p class="text-center text-muted text-small mt-2">
+          Accès réservé aux collaborateurs NovaTech Solutions
+        </p>
+
+        <div class="demo-accounts">
+          <p class="demo-title">— Comptes de démonstration —</p>
+          <div class="demo-cards">
+            <button type="button" class="demo-card demo-admin"
+              data-email="admin@demo.fr" data-password="admin123">
+              <span class="demo-badge">ADMIN</span>
+              <span class="demo-email">admin@demo.fr</span>
+              <span class="demo-pass">admin123</span>
+            </button>
+            <button type="button" class="demo-card demo-manager"
+              data-email="manager@demo.fr" data-password="manager123">
+              <span class="demo-badge">MANAGER</span>
+              <span class="demo-email">manager@demo.fr</span>
+              <span class="demo-pass">manager123</span>
+            </button>
+            <button type="button" class="demo-card demo-employe"
+              data-email="employe@demo.fr" data-password="employe123">
+              <span class="demo-badge">EMPLOYÉ</span>
+              <span class="demo-email">employe@demo.fr</span>
+              <span class="demo-pass">employe123</span>
+            </button>
+          </div>
+          <p class="demo-hint">Cliquez sur un compte pour remplir le formulaire</p>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/login.js"></script>
+  </body>
+</html>
