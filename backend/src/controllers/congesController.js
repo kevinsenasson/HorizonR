@@ -113,5 +113,107 @@ async function demanderConge(req, res) {
  * ADMIN ou MANAGER — valide ou refuse un congé
  * Body : { decision: 'VALIDE'|'REFUSE', commentaire_rh? }
  */
+async function validerConge(req, res) {
+  const { id } = req.params;
+  const { decision, commentaire_rh } = req.body;
+  const valideurId = req.utilisateur.id;
 
-module.exports = { listerConges, demanderConge, listerTypesConges };
+  if (!['VALIDE', 'REFUSE'].includes(decision)) {
+    return res.status(400).json({ error: 'La décision doit être VALIDE ou REFUSE' });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT c.*, e.manager_id, e.solde_conges, e.id AS emp_id
+       FROM conges c JOIN employes e ON c.employe_id = e.id
+       WHERE c.id = ?`,
+      [id]
+    );
+
+    if (rows.length === 0) return res.status(404).json({ error: 'Congé non trouvé' });
+
+    const conge = rows[0];
+
+    if (conge.statut !== 'EN_ATTENTE') {
+      return res.status(400).json({ error: 'Ce congé a déjà été traité' });
+    }
+
+    // Un MANAGER ne peut valider que les congés de son équipe
+    if (req.utilisateur.role === 'MANAGER' && conge.manager_id !== valideurId && conge.emp_id !== valideurId) {
+      return res.status(403).json({ error: 'Vous ne pouvez valider que les congés de votre équipe' });
+    }
+
+    await pool.query(
+      `UPDATE conges SET statut = ?, valideur_id = ?, commentaire_rh = ? WHERE id = ?`,
+      [decision, valideurId, commentaire_rh || null, id]
+    );
+
+    // Déduire le solde si congé validé (CP ou RTT)
+    if (decision === 'VALIDE' && [1, 2].includes(parseInt(conge.type_conge_id))) {
+      await pool.query(
+        'UPDATE employes SET solde_conges = GREATEST(0, solde_conges - ?) WHERE id = ?',
+        [conge.nb_jours, conge.employe_id]
+      );
+    }
+
+    res.json({ message: `Congé ${decision.toLowerCase()}` });
+  } catch (err) {
+    console.error('Erreur validerConge:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+}
+
+/**
+ * DELETE /api/conges/:id
+ * EMPLOYE peut annuler sa propre demande EN_ATTENTE
+ */
+async function annulerConge(req, res) {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await pool.query(
+      'SELECT employe_id, statut FROM conges WHERE id = ?',
+      [id]
+    );
+
+    if (rows.length === 0) return res.status(404).json({ error: 'Congé non trouvé' });
+
+    const conge = rows[0];
+
+    if (conge.employe_id !== req.utilisateur.id && req.utilisateur.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Accès interdit' });
+    }
+
+    if (conge.statut !== 'EN_ATTENTE') {
+      return res.status(400).json({ error: 'Impossible d\'annuler un congé déjà traité' });
+    }
+
+    await pool.query('DELETE FROM conges WHERE id = ?', [id]);
+    res.json({ message: 'Demande de congé annulée' });
+  } catch (err) {
+    console.error('Erreur annulerConge:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+}
+
+/**
+ * GET /api/conges/types
+ */
+async function listerTypes(req, res) {
+  try {
+    const [rows] = await pool.query('SELECT id, libelle FROM types_conges ORDER BY id');
+    res.json(rows);
+  } catch (err) {
+    console.error('Erreur listerTypes:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+}
+
+module.exports = {
+  listerConges,
+  demanderConge,
+  validerConge,
+  annulerConge,
+  listerTypes,
+  calculerJoursOuvres
+};
