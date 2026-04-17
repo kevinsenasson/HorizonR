@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HorizonR — Dashboard</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  </head>
+  <body>
+    <div class="app-layout">
+      <!-- Sidebar injectée dynamiquement -->
+      <div id="sidebar-container"></div>
+
+      <div class="main-content">
+        <header class="topbar">
+          <span class="topbar-title">Tableau de bord</span>
+          <div class="topbar-actions">
+            <span id="notif-badge" class="badge-notif hidden">0</span>
+          </div>
+        </header>
+
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h1>Tableau de bord</h1>
+              <p>Vue d'ensemble — NovaTech Solutions</p>
+            </div>
+          </div>
+
+          <!-- KPI Cards -->
+          <div class="stats-grid" id="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon blue">👥</div>
+              <div>
+                <div class="stat-value" id="kpi-employes">—</div>
+                <div class="stat-label">Collaborateurs actifs</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange">⏳</div>
+              <div>
+                <div class="stat-value" id="kpi-attente">—</div>
+                <div class="stat-label">Congés en attente</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon green">✅</div>
+              <div>
+                <div class="stat-value" id="kpi-valides">—</div>
+                <div class="stat-label">Congés validés</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon red">❌</div>
+              <div>
+                <div class="stat-value" id="kpi-refuses">—</div>
+                <div class="stat-label">Congés refusés</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Graphiques -->
+          <div class="charts-grid">
+            <div class="chart-card">
+              <h3>Effectifs par service</h3>
+              <canvas id="chart-services" height="220"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3>Statut des congés</h3>
+              <canvas id="chart-conges" height="220"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3>Types de congés</h3>
+              <canvas id="chart-types" height="220"></canvas>
+            </div>
+            <div class="chart-card">
+              <h3>Congés validés par mois (année courante)</h3>
+              <canvas id="chart-mois" height="220"></canvas>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/toast.js"></script>
+    <script src="../js/dashboard.js"></script>
+  </body>
+</html>
