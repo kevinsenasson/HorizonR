@@ -125,6 +125,10 @@ Le besoin fonctionnel est de permettre à chaque utilisateur de :
 - Authentification multi-facteur (2FA).
 - Application mobile native.
 
+### Diagramme des cas d'utilisation (UML)
+
+![Diagramme UML Use Case HorizonR](img/UML-HorizonR.png)
+
 ---
 
 ## Contraintes
@@ -253,6 +257,10 @@ employes     1,N  conges
 employes     1,N  planning
 types_conges 1,N  conges
 ```
+
+### Schéma MCD
+
+![MCD HorizonR](img/mcd-HorizonR.png)
 
 ---
 
