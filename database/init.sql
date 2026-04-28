@@ -3,6 +3,7 @@
 -- NovaTech Solutions — BTS SIO SLAM 2026
 -- ============================================================
 
+SET NAMES utf8mb4;
 CREATE DATABASE IF NOT EXISTS horizonr_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE horizonr_db;
 

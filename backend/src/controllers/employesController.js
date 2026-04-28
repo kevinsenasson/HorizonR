@@ -83,6 +83,11 @@ async function creerEmploye(req, res) {
     return res.status(400).json({ error: 'Champs obligatoires manquants (nom, prenom, email, mot_de_passe, role_id)' });
   }
 
+  const regexMdp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_\-#])[A-Za-z\d@$!%*?&_\-#]{8,}$/;
+  if (!regexMdp.test(mot_de_passe)) {
+    return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial (@$!%*?&_-#)' });
+  }
+
   try {
     const hash = await bcrypt.hash(mot_de_passe, SALT_ROUNDS);
     const [result] = await pool.query(
@@ -188,12 +193,39 @@ async function listerRoles(req, res) {
   }
 }
 
+/**
+ * DELETE /api/employes/:id/force
+ * ADMIN uniquement — suppression physique (uniquement si inactif)
+ */
+async function supprimerEmployeDefinitivement(req, res) {
+  const { id } = req.params;
+
+  if (parseInt(id) === req.utilisateur.id) {
+    return res.status(400).json({ error: 'Impossible de supprimer votre propre compte' });
+  }
+
+  try {
+    const [existing] = await pool.query('SELECT id, actif FROM employes WHERE id = ?', [id]);
+    if (existing.length === 0) return res.status(404).json({ error: 'Employé non trouvé' });
+    if (existing[0].actif) {
+      return res.status(400).json({ error: 'Désactiver l\'employé avant de le supprimer définitivement' });
+    }
+
+    await pool.query('DELETE FROM employes WHERE id = ?', [id]);
+    res.json({ message: 'Employé supprimé définitivement' });
+  } catch (err) {
+    console.error('Erreur supprimerEmployeDefinitivement:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+}
+
 module.exports = {
   listerEmployes,
   getEmploye,
   creerEmploye,
   modifierEmploye,
   supprimerEmploye,
+  supprimerEmployeDefinitivement,
   listerServices,
   listerRoles
 };

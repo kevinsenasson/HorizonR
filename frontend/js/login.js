@@ -2,11 +2,6 @@
  * login.js — Gestion du formulaire de connexion
  */
 
-// Rediriger si déjà connecté
-if (Auth.isLoggedIn()) {
-  window.location.href = 'dashboard.html';
-}
-
 // ── Comptes de démo : clic → remplissage automatique ──────────────────────
 document.querySelectorAll('.demo-card').forEach((card) => {
   card.addEventListener('click', () => {

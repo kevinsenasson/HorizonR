@@ -69,8 +69,9 @@ document.getElementById('form-mdp').addEventListener('submit', async (e) => {
   if (nouveau !== confirm_) {
     showToast('Les mots de passe ne correspondent pas', 'warning'); return;
   }
-  if (nouveau.length < 8) {
-    showToast('Le mot de passe doit faire au moins 8 caractères', 'warning'); return;
+  const regexMdp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_\-#])[A-Za-z\d@$!%*?&_\-#]{8,}$/;
+  if (!regexMdp.test(nouveau)) {
+    showToast('Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial (@$!%*?&_-#)', 'warning'); return;
   }
 
   try {

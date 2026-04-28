@@ -125,6 +125,7 @@ Auth.requireAuth();
       themeIcon.textContent  = '🌙';
       themeLabel.textContent = 'Mode sombre';
     }
+    document.dispatchEvent(new CustomEvent('themechange', { detail: { dark } }));
   }
 
   // Sync bouton avec l'état actuel

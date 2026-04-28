@@ -41,8 +41,9 @@ async function changerMotDePasse(req, res) {
     return res.status(400).json({ error: 'Ancien et nouveau mot de passe requis' });
   }
 
-  if (nouveau_mot_de_passe.length < 8) {
-    return res.status(400).json({ error: 'Le nouveau mot de passe doit contenir au moins 8 caractères' });
+  const regexMdp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_\-#])[A-Za-z\d@$!%*?&_\-#]{8,}$/;
+  if (!regexMdp.test(nouveau_mot_de_passe)) {
+    return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial (@$!%*?&_-#)' });
   }
 
   try {

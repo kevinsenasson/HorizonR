@@ -45,7 +45,8 @@ const Api = {
   getEmploye:      (id)    => Api.get(`/employes/${id}`),
   creerEmploye:    (data)  => Api.post('/employes', data),
   modifierEmploye: (id, d) => Api.put(`/employes/${id}`, d),
-  supprimerEmploye:(id)    => Api.delete(`/employes/${id}`),
+  supprimerEmploye:            (id) => Api.delete(`/employes/${id}`),
+  supprimerEmployeDefinitivement: (id) => Api.delete(`/employes/${id}/force`),
   getServices:     ()      => Api.get('/employes/services'),
   getRoles:        ()      => Api.get('/employes/roles'),
 

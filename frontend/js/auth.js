@@ -11,22 +11,16 @@ const Auth = {
    * Stocke le token et les infos utilisateur après login
    */
   setSession(token, utilisateur) {
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY, JSON.stringify(utilisateur));
+    sessionStorage.setItem(TOKEN_KEY, token);
+    sessionStorage.setItem(USER_KEY, JSON.stringify(utilisateur));
   },
 
-  /**
-   * Retourne le token JWT ou null
-   */
   getToken() {
-    return localStorage.getItem(TOKEN_KEY);
+    return sessionStorage.getItem(TOKEN_KEY);
   },
 
-  /**
-   * Retourne l'objet utilisateur connecté ou null
-   */
   getUser() {
-    const raw = localStorage.getItem(USER_KEY);
+    const raw = sessionStorage.getItem(USER_KEY);
     try { return raw ? JSON.parse(raw) : null; }
     catch { return null; }
   },
@@ -50,8 +44,8 @@ const Auth = {
    * Supprime la session
    */
   logout() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(USER_KEY);
     window.location.href = 'login.html';
   },
 

@@ -117,7 +117,32 @@ async function init() {
 
 function remplirSelectEmploye() {
   const sel = document.getElementById('event-employe');
+  const moi = Auth.getUser();
   sel.innerHTML = '';
+
+  // Moi-même en premier
+  const oMoi = document.createElement('option');
+  oMoi.value = moi.id;
+  oMoi.textContent = `👤 Moi-même (${moi.prenom} ${moi.nom})`;
+  sel.appendChild(oMoi);
+
+  // Toute l'équipe (si MANAGER avec des membres)
+  if (role === 'MANAGER' && employes.length > 0) {
+    const oAll = document.createElement('option');
+    oAll.value = 'all';
+    oAll.textContent = `👥 Toute mon équipe (${employes.length + 1} personnes)`;
+    sel.appendChild(oAll);
+  }
+
+  // Séparateur
+  if (employes.length > 0) {
+    const sep = document.createElement('option');
+    sep.disabled = true;
+    sep.textContent = '──────────';
+    sel.appendChild(sep);
+  }
+
+  // Membres de l'équipe
   employes.forEach(e => {
     const o = document.createElement('option');
     o.value = e.id;
@@ -135,20 +160,27 @@ document.getElementById('btn-annuler-event').     addEventListener('click', () =
 modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('open'); });
 
 document.getElementById('btn-sauvegarder-event').addEventListener('click', async () => {
-  const payload = {
-    employe_id:  parseInt(document.getElementById('event-employe').value),
-    titre:       document.getElementById('event-titre').value,
-    description: document.getElementById('event-description').value || null,
-    date_debut:  document.getElementById('event-debut').value,
-    date_fin:    document.getElementById('event-fin').value,
-    type:        document.getElementById('event-type').value
-  };
-  if (!payload.titre || !payload.date_debut || !payload.date_fin) {
+  const selVal      = document.getElementById('event-employe').value;
+  const titre       = document.getElementById('event-titre').value;
+  const description = document.getElementById('event-description').value || null;
+  const date_debut  = document.getElementById('event-debut').value;
+  const date_fin    = document.getElementById('event-fin').value;
+  const type        = document.getElementById('event-type').value;
+
+  if (!titre || !date_debut || !date_fin) {
     showToast('Champs obligatoires manquants', 'warning'); return;
   }
+
   try {
-    await Api.creerEvenement(payload);
-    showToast('Événement créé', 'success');
+    if (selVal === 'all') {
+      const moi = Auth.getUser();
+      const tous = [moi.id, ...employes.map(e => e.id)];
+      await Promise.all(tous.map(id => Api.creerEvenement({ employe_id: id, titre, description, date_debut, date_fin, type })));
+      showToast(`Événement créé pour ${tous.length} personnes`, 'success');
+    } else {
+      await Api.creerEvenement({ employe_id: parseInt(selVal), titre, description, date_debut, date_fin, type });
+      showToast('Événement créé', 'success');
+    }
     modal.classList.remove('open');
     evenements = await Api.getPlanning();
     renderPlanning();

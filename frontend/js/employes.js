@@ -65,8 +65,8 @@ function renderTable(liste) {
         <div class="gap-1">
           <button class="btn btn-outline btn-sm" onclick="ouvrirEdition(${e.id})">✏️</button>
           ${e.actif
-            ? `<button class="btn btn-danger btn-sm" onclick="desactiver(${e.id})">🗑</button>`
-            : ''}
+            ? `<button class="btn btn-danger btn-sm" onclick="desactiver(${e.id})" title="Désactiver">🗑</button>`
+            : `<button class="btn btn-danger btn-sm" onclick="supprimerDefinitivement(${e.id})" title="Supprimer définitivement">❌</button>`}
         </div>
       </td>
     </tr>
@@ -171,7 +171,13 @@ document.getElementById('btn-sauvegarder-employe').addEventListener('click', asy
     actif:         1
   };
   if (!editId) {
-    payload.mot_de_passe = document.getElementById('emp-mdp').value;
+    const mdp = document.getElementById('emp-mdp').value;
+    const regexMdp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_\-#])[A-Za-z\d@$!%*?&_\-#]{8,}$/;
+    if (!regexMdp.test(mdp)) {
+      showToast('Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial (@$!%*?&_-#)', 'warning');
+      return;
+    }
+    payload.mot_de_passe = mdp;
   }
 
   try {
@@ -195,6 +201,18 @@ async function desactiver(id) {
   try {
     await Api.supprimerEmploye(id);
     showToast('Employé désactivé', 'success');
+    await init();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+// ---------- Suppression définitive ----------
+async function supprimerDefinitivement(id) {
+  if (!confirm('Supprimer définitivement cet employé ? Cette action est irréversible.')) return;
+  try {
+    await Api.supprimerEmployeDefinitivement(id);
+    showToast('Employé supprimé définitivement', 'success');
     await init();
   } catch (err) {
     showToast(err.message, 'error');
