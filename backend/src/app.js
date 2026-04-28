@@ -12,8 +12,12 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 // Middlewares globaux
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+  : ['http://localhost', 'http://localhost:80'];
+
 app.use(cors({
-  origin: ['http://localhost', 'http://localhost:80'],
+  origin: allowedOrigins,
   credentials: true
 }));
 app.use(express.json());

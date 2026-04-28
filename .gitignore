@@ -1,5 +1,8 @@
 # Environnement
 .env
+.env.prod
+.env.local
+.env.*.local
 
 # Node
 node_modules/

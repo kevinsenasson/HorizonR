@@ -1,0 +1,103 @@
+services:
+  horizonr-db:
+    image: mysql:8.0
+    container_name: horizonr-db
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - horizonr_db_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    networks:
+      - horizonr-internal
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${MYSQL_ROOT_PASSWORD}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  horizonr-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: horizonr-api
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: horizonr-db
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE}
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+    depends_on:
+      horizonr-db:
+        condition: service_healthy
+    networks:
+      - horizonr-internal
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.horizonr-api.entrypoints=websecure"
+      - "traefik.http.routers.horizonr-api.rule=Host(`api-horizonr.iris.a3n.fr`)"
+      - "traefik.http.routers.horizonr-api.tls=true"
+      - "traefik.http.routers.horizonr-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.horizonr-api.loadbalancer.server.port=3000"
+      # Redirection HTTP -> HTTPS
+      - "traefik.http.routers.horizonr-api-http.entrypoints=web"
+      - "traefik.http.routers.horizonr-api-http.rule=Host(`api-horizonr.iris.a3n.fr`)"
+      - "traefik.http.routers.horizonr-api-http.middlewares=https-redirect@file"
+
+  horizonr-front:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: horizonr-front
+    restart: unless-stopped
+    depends_on:
+      - horizonr-api
+    networks:
+      - horizonr-internal
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.horizonr-front.entrypoints=websecure"
+      - "traefik.http.routers.horizonr-front.rule=Host(`horizonr.iris.a3n.fr`)"
+      - "traefik.http.routers.horizonr-front.tls=true"
+      - "traefik.http.routers.horizonr-front.tls.certresolver=letsencrypt"
+      - "traefik.http.services.horizonr-front.loadbalancer.server.port=80"
+      # Redirection HTTP -> HTTPS
+      - "traefik.http.routers.horizonr-front-http.entrypoints=web"
+      - "traefik.http.routers.horizonr-front-http.rule=Host(`horizonr.iris.a3n.fr`)"
+      - "traefik.http.routers.horizonr-front-http.middlewares=https-redirect@file"
+
+volumes:
+  horizonr_db_data:
+
+networks:
+  proxy:
+    external: true
+  horizonr-internal:
+    driver: bridge
+    internal: true
