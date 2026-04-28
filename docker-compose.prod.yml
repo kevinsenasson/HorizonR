@@ -54,19 +54,21 @@ services:
         condition: service_healthy
     networks:
       - horizonr-internal
-      - proxy
+      - admin_proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
+      - "traefik.docker.network=admin_proxy"
       - "traefik.http.routers.horizonr-api.entrypoints=websecure"
       - "traefik.http.routers.horizonr-api.rule=Host(`api-horizonr.iris.a3n.fr`)"
       - "traefik.http.routers.horizonr-api.tls=true"
       - "traefik.http.routers.horizonr-api.tls.certresolver=letsencrypt"
       - "traefik.http.services.horizonr-api.loadbalancer.server.port=3000"
-      # Redirection HTTP -> HTTPS
+      # Redirection HTTP -> HTTPS (middleware inline)
+      - "traefik.http.middlewares.horizonr-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.horizonr-https-redirect.redirectscheme.permanent=true"
       - "traefik.http.routers.horizonr-api-http.entrypoints=web"
       - "traefik.http.routers.horizonr-api-http.rule=Host(`api-horizonr.iris.a3n.fr`)"
-      - "traefik.http.routers.horizonr-api-http.middlewares=https-redirect@file"
+      - "traefik.http.routers.horizonr-api-http.middlewares=horizonr-https-redirect"
 
   horizonr-front:
     build:
@@ -78,25 +80,25 @@ services:
       - horizonr-api
     networks:
       - horizonr-internal
-      - proxy
+      - admin_proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
+      - "traefik.docker.network=admin_proxy"
       - "traefik.http.routers.horizonr-front.entrypoints=websecure"
       - "traefik.http.routers.horizonr-front.rule=Host(`horizonr.iris.a3n.fr`)"
       - "traefik.http.routers.horizonr-front.tls=true"
       - "traefik.http.routers.horizonr-front.tls.certresolver=letsencrypt"
       - "traefik.http.services.horizonr-front.loadbalancer.server.port=80"
-      # Redirection HTTP -> HTTPS
+      # Redirection HTTP -> HTTPS (middleware inline)
       - "traefik.http.routers.horizonr-front-http.entrypoints=web"
       - "traefik.http.routers.horizonr-front-http.rule=Host(`horizonr.iris.a3n.fr`)"
-      - "traefik.http.routers.horizonr-front-http.middlewares=https-redirect@file"
+      - "traefik.http.routers.horizonr-front-http.middlewares=horizonr-https-redirect"
 
 volumes:
   horizonr_db_data:
 
 networks:
-  proxy:
+  admin_proxy:
     external: true
   horizonr-internal:
     driver: bridge
