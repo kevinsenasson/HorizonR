@@ -4,11 +4,6 @@ services:
     container_name: horizonr-db
     restart: unless-stopped
     env_file: .env.prod
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - horizonr_db_data:/var/lib/mysql
       - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
@@ -16,17 +11,7 @@ services:
     networks:
       - horizonr-internal
     healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "localhost",
-          "-u",
-          "root",
-          "-p${MYSQL_ROOT_PASSWORD}",
-        ]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--silent"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -43,12 +28,6 @@ services:
       PORT: 3000
       DB_HOST: horizonr-db
       DB_PORT: 3306
-      DB_NAME: ${MYSQL_DATABASE}
-      DB_USER: ${MYSQL_USER}
-      DB_PASSWORD: ${MYSQL_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
-      CORS_ORIGIN: ${CORS_ORIGIN}
     depends_on:
       horizonr-db:
         condition: service_healthy
