@@ -25,9 +25,9 @@ async function listerPlanning(req, res) {
                CONCAT(e.prenom,' ',e.nom) AS employe, e.id AS employe_id
         FROM planning p
         JOIN employes e ON p.employe_id = e.id
-        WHERE e.manager_id = ? OR e.id = ?
+        WHERE e.service_id = (SELECT service_id FROM employes WHERE id = ?)
         ORDER BY p.date_debut`;
-      params = [id, id];
+      params = [id];
     } else {
       query = `
         SELECT p.id, p.titre, p.description, p.date_debut, p.date_fin, p.type
@@ -56,6 +56,11 @@ async function creerEvenement(req, res) {
     return res.status(400).json({ error: 'employe_id, titre, date_debut et date_fin sont obligatoires' });
   }
 
+  // Un EMPLOYE ne peut créer que pour lui-même
+  if (req.utilisateur.role === 'EMPLOYE' && parseInt(employe_id) !== req.utilisateur.id) {
+    return res.status(403).json({ error: 'Vous ne pouvez créer des événements que pour vous-même' });
+  }
+
   if (new Date(date_fin) < new Date(date_debut)) {
     return res.status(400).json({ error: 'La date de fin doit être postérieure à la date de début' });
   }
@@ -81,8 +86,13 @@ async function creerEvenement(req, res) {
 async function supprimerEvenement(req, res) {
   const { id } = req.params;
   try {
-    const [existing] = await pool.query('SELECT id FROM planning WHERE id = ?', [id]);
+    const [existing] = await pool.query('SELECT id, employe_id FROM planning WHERE id = ?', [id]);
     if (existing.length === 0) return res.status(404).json({ error: 'Événement non trouvé' });
+
+    // Un EMPLOYE ne peut supprimer que ses propres événements
+    if (req.utilisateur.role === 'EMPLOYE' && existing[0].employe_id !== req.utilisateur.id) {
+      return res.status(403).json({ error: 'Vous ne pouvez supprimer que vos propres événements' });
+    }
 
     await pool.query('DELETE FROM planning WHERE id = ?', [id]);
     res.json({ message: 'Événement supprimé' });

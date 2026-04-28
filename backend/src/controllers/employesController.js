@@ -166,6 +166,30 @@ async function supprimerEmploye(req, res) {
 }
 
 /**
+ * GET /api/employes/par-service
+ * Retourne tous les employés actifs du même service que l'utilisateur connecté
+ */
+async function listerEmployesService(req, res) {
+  const { id } = req.utilisateur;
+  try {
+    const [rows] = await pool.query(
+      `SELECT e.id, e.nom, e.prenom, e.email, e.poste, r.nom AS role, s.nom AS service
+       FROM employes e
+       JOIN roles r ON e.role_id = r.id
+       LEFT JOIN services s ON e.service_id = s.id
+       WHERE e.service_id = (SELECT service_id FROM employes WHERE id = ?)
+         AND e.actif = 1
+       ORDER BY e.nom`,
+      [id]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('Erreur listerEmployesService:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+}
+
+/**
  * GET /api/employes/services
  * Retourne la liste des services (utilisé dans les formulaires)
  */
@@ -226,6 +250,7 @@ module.exports = {
   modifierEmploye,
   supprimerEmploye,
   supprimerEmployeDefinitivement,
+  listerEmployesService,
   listerServices,
   listerRoles
 };

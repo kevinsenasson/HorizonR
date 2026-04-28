@@ -41,8 +41,9 @@ const Api = {
   login: (email, mot_de_passe) => Api.post('/auth/login', { email, mot_de_passe }),
 
   // --- Employés ---
-  getEmployes:     ()      => Api.get('/employes'),
-  getEmploye:      (id)    => Api.get(`/employes/${id}`),
+  getEmployes:                 ()      => Api.get('/employes'),
+  getEmployesParService:       ()      => Api.get('/employes/par-service'),
+  getEmploye:                  (id)    => Api.get(`/employes/${id}`),
   creerEmploye:    (data)  => Api.post('/employes', data),
   modifierEmploye: (id, d) => Api.put(`/employes/${id}`, d),
   supprimerEmploye:            (id) => Api.delete(`/employes/${id}`),

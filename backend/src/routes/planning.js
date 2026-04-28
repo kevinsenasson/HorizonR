@@ -7,8 +7,8 @@ const router = express.Router();
 
 router.use(auth);
 
-router.get('/',      listerPlanning);
-router.post('/',     role('ADMIN', 'MANAGER'), creerEvenement);
-router.delete('/:id',role('ADMIN', 'MANAGER'), supprimerEvenement);
+router.get('/',       listerPlanning);
+router.post('/',      creerEvenement);
+router.delete('/:id', supprimerEvenement);
 
 module.exports = router;

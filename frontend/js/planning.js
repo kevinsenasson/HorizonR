@@ -71,12 +71,13 @@ function renderPlanning() {
       html += '<div style="min-height:60px;padding:4px;">';
       evtsJour.forEach(ev => {
         const libType = ev.type ? ev.type.charAt(0) + ev.type.slice(1).toLowerCase() : '';
+        const peutSupprimer = role !== 'EMPLOYE' || ev.employe_id === Auth.getUser()?.id;
         html += `
           <div class="planning-event ${classeType(ev.type)}" title="${ev.description || ev.titre}">
             ${role !== 'EMPLOYE' && ev.employe ? `<span class="fw-600">${ev.employe}</span> — ` : ''}
             ${ev.titre}
             ${ev.date_debut ? ` (${new Date(ev.date_debut).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })})` : ''}
-            ${role !== 'EMPLOYE' ? `<button class="btn btn-icon" style="font-size:.65rem;padding:0 .2rem;margin-left:.3rem;" onclick="supprimerEv(${ev.id})">✕</button>` : ''}
+            ${peutSupprimer ? `<button class="btn btn-icon" style="font-size:.65rem;padding:0 .2rem;margin-left:.3rem;" onclick="supprimerEv(${ev.id})">✕</button>` : ''}
           </div>
         `;
       });
@@ -103,16 +104,36 @@ async function init() {
   try {
     evenements = await Api.getPlanning();
 
-    if (role === 'ADMIN' || role === 'MANAGER') {
-      document.getElementById('btn-nouvel-event').classList.remove('hidden');
+    // Tous les rôles peuvent créer des événements
+    document.getElementById('btn-nouvel-event').classList.remove('hidden');
+
+    if (role === 'ADMIN') {
       employes = await Api.getEmployes();
       remplirSelectEmploye();
+    } else if (role === 'MANAGER') {
+      const tous = await Api.getEmployesParService();
+      const moi  = Auth.getUser();
+      employes   = tous.filter(e => e.id !== moi.id);
+      remplirSelectEmploye();
+    } else {
+      // EMPLOYE : select avec seulement lui-même
+      remplirSelectEmployeSimple();
     }
 
     renderPlanning();
   } catch (err) {
     showToast(err.message, 'error');
   }
+}
+
+function remplirSelectEmployeSimple() {
+  const sel = document.getElementById('event-employe');
+  const moi = Auth.getUser();
+  sel.innerHTML = '';
+  const o = document.createElement('option');
+  o.value = moi.id;
+  o.textContent = `${moi.prenom} ${moi.nom}`;
+  sel.appendChild(o);
 }
 
 function remplirSelectEmploye() {
