@@ -46,8 +46,10 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: 'Erreur serveur interne' });
 });
 
-app.listen(PORT, () => {
-  console.log(`HorizonR API démarrée sur le port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`HorizonR API démarrée sur le port ${PORT}`);
+  });
+}
 
 module.exports = app;
