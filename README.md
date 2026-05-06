@@ -103,13 +103,28 @@ horizonr/
 ├── backend/
 │   ├── Dockerfile
 │   ├── package.json
+│   ├── jest.integration.config.js
 │   └── src/
 │       ├── app.js              # Point d'entrée Express
 │       ├── config/db.js        # Pool mysql2
 │       ├── middleware/
 │       │   ├── auth.js         # Vérification JWT
 │       │   └── role.js         # RBAC (ADMIN / MANAGER / EMPLOYE)
-│       ├── controllers/
+│       ├── repositories/       # Accès SQL pur (aucune logique métier)
+│       │   ├── authRepository.js
+│       │   ├── employesRepository.js
+│       │   ├── congesRepository.js
+│       │   ├── planningRepository.js
+│       │   ├── dashboardRepository.js
+│       │   └── profilRepository.js
+│       ├── services/           # Logique métier isolée
+│       │   ├── authService.js
+│       │   ├── employesService.js
+│       │   ├── congesService.js
+│       │   ├── planningService.js
+│       │   ├── dashboardService.js
+│       │   └── profilService.js
+│       ├── controllers/        # Couche HTTP uniquement
 │       │   ├── authController.js
 │       │   ├── employesController.js
 │       │   ├── congesController.js
@@ -159,10 +174,30 @@ horizonr/
 │
 └── backend/
     └── tests/
-        ├── auth.test.js             # Middleware JWT (5 tests)
-        ├── role.test.js             # Middleware RBAC (5 tests)
-        ├── conges.test.js           # Logique métier (11 tests)
-        └── authController.test.js   # Contrôleur login (7 tests)
+        ├── auth.test.js                  # Middleware JWT
+        ├── role.test.js                  # Middleware RBAC
+        ├── authRepository.test.js
+        ├── authService.test.js
+        ├── authController.test.js
+        ├── employesRepository.test.js
+        ├── employesService.test.js
+        ├── employesController.test.js
+        ├── congesRepository.test.js
+        ├── congesService.test.js
+        ├── congesController.test.js
+        ├── planningRepository.test.js
+        ├── planningService.test.js
+        ├── planningController.test.js
+        ├── dashboardRepository.test.js
+        ├── dashboardService.test.js
+        ├── dashboardController.test.js
+        ├── profilRepository.test.js
+        ├── profilService.test.js
+        ├── profilController.test.js
+        └── integration/                  # Tests supertest sur base dédiée
+            ├── auth.test.js
+            ├── employes.test.js
+            └── conges.test.js
 ```
 
 ---
@@ -224,11 +259,15 @@ horizonr/
 ```bash
 # Depuis backend/
 npm install
-npm test                    # Tous les tests
-npm run test:coverage       # Avec rapport de couverture
+cd backend
+npm test                  # 189 tests unitaires (20 suites)
+npm run test:coverage       # Avec rapport de couverture Istanbul
+npm run test:integration    # 30 tests d'intégration (base MySQL dédiée port 3308)
 ```
 
-Résultat : **28 tests passés** — couverture 100% sur middleware auth + RBAC.
+Résultats : **189 tests unitaires (20 suites) + 30 tests d'intégration (3 suites)** — couverture > 97 % sur les 3 couches métier.
+
+> Les tests d'intégration nécessitent `docker compose -f docker-compose.test.yml up -d` au préalable.
 
 ---
 

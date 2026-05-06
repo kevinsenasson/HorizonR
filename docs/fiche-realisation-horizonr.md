@@ -31,22 +31,36 @@ Conception et développement d'une application web Full-Stack de gestion des res
 Ce projet est une **application web RH** développée en **Node.js 20** et **Express.js 4.18** côté serveur, avec un frontend en **HTML5 / CSS3 / JavaScript Vanilla**, conçue pour gérer les **employés**, les **congés** et le **planning** d'une PME.
 
 **Atouts Node.js / Express :**
-évolutivité, performance sur les I/O, écosystème npm riche, déploiement facilité via Docker, langage unique JavaScript front et back.
+
+- évolutivité et performance sur les I/O
+- écosystème npm riche, déploiement facilité via Docker
+- langage unique JavaScript front et back (réduction du contexte-switching)
 
 **Inconvénients Node.js / Express :**
-aucune structure imposée par le framework (risque de "fat controller"), gestion asynchrone à maîtriser, pas de couche ORM native.
+
+- aucune structure imposée par le framework (risque de "fat controller", résolu par l'architecture 3 couches Repository / Service / Controller)
+- gestion asynchrone à maîtriser
+- pas de couche ORM native
 
 **Atouts JavaScript Vanilla (frontend) :**
-aucune dépendance extérieure, chargement rapide, contrôle total du code, compétence transférable sans framework.
+
+- aucune dépendance extérieure, chargement rapide
+- contrôle total du code, compétence transférable sans framework
 
 **Inconvénients JavaScript Vanilla :**
-plus verbeux qu'un framework comme React ou Vue, gestion manuelle du DOM.
+
+- plus verbeux qu'un framework comme React ou Vue
+- gestion manuelle du DOM
 
 **Atouts MySQL 8.0 :**
-base relationnelle éprouvée, contraintes d'intégrité fortes (FK, CHECK, ENUM), performante pour les jointures multi-tables, bien supportée par mysql2.
+
+- base relationnelle éprouvée, contraintes d'intégrité fortes (FK, CHECK, ENUM)
+- performante pour les jointures multi-tables, bien supportée par `mysql2`
 
 **Inconvénients MySQL 8.0 :**
-nécessite un serveur dédié (résolu via Docker), configuration réseau entre conteneurs à soigner.
+
+- nécessite un serveur dédié (résolu via Docker)
+- configuration réseau entre conteneurs à soigner
 
 > L'application est déployable en une seule commande : `docker compose up --build`.
 > Elle est conçue pour une utilisation multi-utilisateurs avec trois niveaux de droits : **ADMIN**, **MANAGER**, **EMPLOYE**.
@@ -92,13 +106,29 @@ Le besoin fonctionnel est de permettre à chaque utilisateur de :
 
 ## Objectifs de la solution
 
-- Proposer une application web stable, déployable en local via Docker.
+- Proposer une application web stable, déployable en local via Docker et sur un serveur.
 - Couvrir les opérations CRUD sur les données métier.
 - Sécuriser les accès par JWT et RBAC (Role-Based Access Control).
 - Garantir l'intégrité des données avec des validations centralisées côté API.
-- Structurer l'API REST selon le pattern MVC pour faciliter la maintenance.
-- Couvrir les composants critiques (middlewares) par des tests automatiques (Jest).
+- Structurer l'API REST selon le pattern MVC 3 couches (Repository / Service / Controller) pour isoler la logique métier et faciliter les tests.
+- Couvrir l'ensemble des composants par des tests automatiques (Jest) avec une couverture > 90 %.
 - Fournir une base exploitable pour la démonstration orale BTS SIO.
+
+---
+
+## Accès à l'application
+
+L'application est déployée sur un serveur distant et accessible à l'adresse suivante :
+
+**https://horizonr.iris.a3n.fr:4433/pages/login.html**
+
+| Rôle    | Email                     | Mot de passe |
+| ------- | ------------------------- | ------------ |
+| Admin   | sophie.martin@novatech.fr | Password1!   |
+| Manager | thomas.leroy@novatech.fr  | Password1!   |
+| Employé | antoine.petit@novatech.fr | Password1!   |
+
+> Tous les 47 employés partagent le mot de passe `Password1!`
 
 ---
 
@@ -115,7 +145,8 @@ Le besoin fonctionnel est de permettre à chaque utilisateur de :
 - Tableau de bord Admin avec 4 graphiques Chart.js.
 - Calcul automatique des jours ouvrés (hors week-ends).
 - Déduction automatique du solde de congés à la validation.
-- Suite de tests Jest sur les middlewares et contrôleurs.
+- Architecture 3 couches (Repository / Service / Controller) pour les 6 entités métier.
+- Suite de tests Jest : 189 tests unitaires (20 suites) + 30 tests d'intégration (3 suites), couverture > 90 %.
 
 ### Hors périmètre
 
@@ -175,14 +206,25 @@ Le besoin fonctionnel est de permettre à chaque utilisateur de :
 - Un fichier par ressource : `auth.js`, `employes.js`, `conges.js`, `planning.js`, `dashboard.js`, `profil.js`
 - Les routes appliquent `auth` globalement puis `role(...)` sur les endpoints sensibles
 
+#### `repositories/`
+
+- Un fichier par ressource : accès SQL pur, aucune logique métier
+- `authRepository.js`, `congesRepository.js`, `dashboardRepository.js`, `employesRepository.js`, `planningRepository.js`, `profilRepository.js`
+
+#### `services/`
+
+- Un fichier par ressource : logique métier isolée, appelle le repository correspondant
+- Retournent `{ error: 'CODE' }` en cas d'erreur métier (ex. : `SOLDE_INSUFFISANT`, `CHEVAUCHEMENT`)
+- `authService.js`, `congesService.js`, `dashboardService.js`, `employesService.js`, `planningService.js`, `profilService.js`
+
 #### `controllers/`
 
-- Un fichier par ressource, contenant la logique métier et les requêtes SQL paramétrées
-- `authController.js` : login (bcrypt + JWT), logout
+- Un fichier par ressource : couche HTTP uniquement (lecture `req`, appel service, écriture `res`)
+- `authController.js` : login, logout
 - `employesController.js` : CRUD employés + listes services/rôles
-- `congesController.js` : CRUD congés + calcul jours ouvrés + déduction solde
+- `congesController.js` : CRUD congés
 - `planningController.js` : liste, création, suppression d'événements
-- `dashboardController.js` : agrégats SQL pour les KPI (effectifs, congés par mois, par type…)
+- `dashboardController.js` : KPI Admin
 - `profilController.js` : consultation et mise à jour du profil connecté
 
 #### `app.js`
@@ -204,6 +246,42 @@ Le besoin fonctionnel est de permettre à chaque utilisateur de :
 #### `css/`
 
 - `style.css` : feuille de style globale avec variables CSS (thème, couleurs, sidebar)
+
+---
+
+## Organisation du code
+
+### Backend (backend/src/)
+
+- `app.js` : point d'entrée Express, configuration CORS, enregistrement des routes.
+- `config/db.js` : pool de connexions MySQL via mysql2.
+- `routes/` : auth.js, employes.js, conges.js, planning.js, dashboard.js, profil.js.
+- `repositories/` _(nouveau)_ : authRepository.js, congesRepository.js, dashboardRepository.js, employesRepository.js, planningRepository.js, profilRepository.js — accès SQL pur, aucune logique métier.
+- `services/` _(nouveau)_ : authService.js, congesService.js, dashboardService.js, employesService.js, planningService.js, profilService.js — logique métier isolée, retournent `{ error: 'CODE' }` en cas d'erreur.
+- `controllers/` : authController.js, employesController.js, congesController.js, planningController.js, dashboardController.js, profilController.js — couche HTTP uniquement, délèguent au service correspondant.
+- `middleware/auth.js` : vérification et décodage du token JWT.
+- `middleware/role.js` : générateur de middleware RBAC (exemple : `role('ADMIN', 'MANAGER')`).
+
+### Frontend (frontend/)
+
+- `pages/` : login.html, dashboard.html, employes.html, conges.html, planning.html, profil.html.
+- `js/auth.js` : gestion de la session localStorage (token JWT et données utilisateur), initialisation du thème.
+- `js/api.js` : wrapper fetch centralisé vers tous les endpoints de l'API.
+- `js/sidebar.js` : génération dynamique de la sidebar selon le rôle, bascule du mode sombre.
+- `js/` : dashboard.js, employes.js, conges.js, planning.js, profil.js, login.js, toast.js.
+- `css/style.css` : feuille de style globale avec variables CSS et support complet du mode sombre via l'attribut `data-theme="dark"`.
+- `nginx.conf` : configuration nginx (proxy inverse vers le backend, redirection de la racine).
+
+### Base de données (database/)
+
+- `init.sql` : création des tables `services`, `roles`, `employes`, `types_conges`, `conges` et `planning` avec contraintes de clés étrangères et index de performance.
+- `seed.sql` : données de démonstration incluant 47 employés réalistes et 3 comptes de test (ADMIN, MANAGER, EMPLOYE).
+
+### Tests (backend/tests/)
+
+- Tests unitaires Jest par couche pour chaque entité : `authRepository.test.js`, `authService.test.js`, `authController.test.js`, et idem pour conges, dashboard, employes, planning, profil — **189 tests, 20 suites**.
+- Tests d'intégration supertest (base de données dédiée sur port 3308) : `auth.test.js`, `employes.test.js`, `conges.test.js` — **30 tests, 3 suites**.
+- Rapport de couverture généré via Jest (lcov, clover.xml).
 
 ---
 
@@ -294,13 +372,37 @@ Nginx sert les fichiers statiques du frontend et joue le rôle de **reverse prox
 
 ## Tests
 
-- **Unitaires middlewares** : `auth.test.js` — 100% de couverture sur `auth.js` (token absent, mal formé, invalide, expiré, valide)
-- **Unitaires RBAC** : `role.test.js` — 100% de couverture sur `role.js` (rôle absent, insuffisant, autorisé, multi-rôles)
-- **Tests contrôleurs** : `authController.test.js`, `conges.test.js` — login, demande de congé
+- **Unitaires middlewares** : `auth.test.js` (100 % — token absent, mal formé, invalide, expiré, valide), `role.test.js` (100 % — rôle absent, insuffisant, autorisé, multi-rôles)
+- **Unitaires par couche** : pour chaque entité (auth, conges, dashboard, employes, planning, profil), 3 suites de tests couvrent le Repository, le Service et le Controller — **189 tests, 20 suites**
+- **Tests d'intégration** : `auth.test.js`, `employes.test.js`, `conges.test.js` via supertest sur base MySQL dédiée (docker-compose.test.yml, port 3308) — **30 tests, 3 suites**
 - **Rapport de couverture** : généré via `jest --coverage` (Istanbul), disponible dans `backend/coverage/lcov-report/`
 
-**Couverture globale des middlewares : 100%**.
-Couverture des contrôleurs : partielle (~13% sur `congesController.js`) — conséquence de l'architecture Fat Controller qui couple logique métier et accès base dans le même fichier.
+**Couverture globale > 90 %** sur les couches métier (Repository, Service, Controller).
+Middlewares JWT et RBAC couverts à **100 %**.
+
+---
+
+## Flux typiques de l'application
+
+### Authentification
+
+Utilisateur (formulaire login) → `POST /api/auth/login` → `authController` → `authService` (vérification bcrypt + génération token JWT) → `authRepository` (SELECT employé par email) → stockage localStorage → redirection selon rôle.
+
+### Demande de congé
+
+Employé (formulaire congés) → `POST /api/conges` → middleware JWT → middleware role → `congesController` → `congesService` (vérification chevauchement de dates) → `congesRepository` (INSERT MySQL) → toast de confirmation.
+
+### Validation d'un congé
+
+ADMIN ou MANAGER → `PUT /api/conges/:id/valider` → middleware JWT + `role('ADMIN','MANAGER')` → `congesController` → `congesService` (mise à jour statut et décompte du solde) → `congesRepository` (UPDATE MySQL) → réponse JSON.
+
+### Consultation du dashboard
+
+ADMIN → `GET /api/dashboard/stats` → middleware JWT + `role('ADMIN')` → `dashboardController` → `dashboardService` → `dashboardRepository` (3 requêtes SQL agrégées) → données JSON → `renderKPI()` et `renderCharts()` via Chart.js.
+
+### Génération de la sidebar
+
+Chargement de la page → `auth.js` (vérification token et application du thème) → `sidebar.js` → lecture du rôle depuis localStorage → injection du HTML selon ADMIN, MANAGER ou EMPLOYE → marquage du lien actif.
 
 ---
 
@@ -349,7 +451,14 @@ Couverture des contrôleurs : partielle (~13% sur `congesController.js`) — con
 - Sidebar dynamique selon le rôle, système de toasts pour les messages.
 - Tableau de bord Admin avec 4 graphiques Chart.js.
 
-### Phase 6 — Livraison et soutenance
+### Phase 6 — Qualité et tests
+
+- Refactorisation en architecture 3 couches : extraction des `repositories/` et `services/` depuis les contrôleurs.
+- Écriture des tests unitaires Jest par couche (Repository, Service, Controller) pour les 6 entités.
+- Mise en place des tests d'intégration supertest sur base de données dédiée (docker-compose.test.yml, port 3308).
+- Mesure de couverture Istanbul (> 90 % sur les couches métier).
+
+### Phase 7 — Livraison et soutenance
 
 - Stabilisation technique et données de démonstration (`seed.sql`).
 - Rédaction de la documentation (MCD, MLD, MPD, guide utilisateur, fiche E5).
@@ -369,9 +478,10 @@ Réalisation individuelle. J'ai pris en charge l'ensemble du cycle, de l'analyse
 
 ### Mission B — Backend API REST
 
-- Développement de l'ensemble des controllers et routes Express.
+- Développement de l'ensemble des routes Express.
 - Mise en place des middlewares d'authentification JWT et RBAC.
-- Écriture de toutes les requêtes SQL (paramétrées, avec jointures multi-tables).
+- Écriture de toutes les requêtes SQL paramétrées dans les repositories.
+- Refactorisation en architecture 3 couches : extraction des services et des repositories depuis les contrôleurs.
 
 ### Mission C — Sécurité et validation
 
@@ -388,8 +498,9 @@ Réalisation individuelle. J'ai pris en charge l'ensemble du cycle, de l'analyse
 
 ### Mission E — Tests et qualité
 
-- Écriture des tests unitaires Jest (middlewares auth et RBAC, contrôleurs).
-- Génération et analyse du rapport de couverture Istanbul.
+- Écriture des tests unitaires Jest par couche (Repository, Service, Controller) pour les 6 entités — 189 tests, 20 suites.
+- Mise en place des tests d'intégration supertest sur base dédiée (docker-compose.test.yml, port 3308) — 30 tests, 3 suites.
+- Génération et analyse du rapport de couverture Istanbul (> 90 % sur les couches métier).
 - Jeu de données de démonstration complet (47 employés, congés, planning).
 
 ---
@@ -428,13 +539,24 @@ Solution : filtrage systématique côté backend via des requêtes SQL condition
 
 ---
 
+**Problème 5 : Couplage logique métier / accès base dans les contrôleurs (Fat Controller)**
+
+L'architecture initiale concentrait dans chaque contrôleur les requêtes SQL, les calculs métier et la gestion HTTP, rendant les tests difficiles et la couverture faible (~13 % sur `congesController.js`).
+
+Solution : refactorisation complète en architecture 3 couches — `repositories/` (SQL pur), `services/` (logique métier, erreurs codifiées), `controllers/` (HTTP uniquement). Résultat : 189 tests unitaires passants (20 suites), 30 tests d'intégration (3 suites), couverture > 90 %.
+
+---
+
 ## Résultats obtenus
 
 - Application fonctionnelle lancée avec `docker compose up --build`.
 - Base MySQL créée et peuplée automatiquement au premier démarrage.
 - Parcours métier complet opérationnel (employés, congés, planning, profil).
-- Middlewares JWT et RBAC couverts à 100% par les tests Jest.
+- 189 tests unitaires (20 suites) + 30 tests d'intégration (3 suites), tous passants.
+- Couverture globale > 90 % sur les couches métier (Repository, Service, Controller).
+- Middlewares JWT et RBAC couverts à 100 % par les tests Jest.
 - Interface responsive adaptée aux 3 rôles utilisateurs.
+- Application accessible en ligne : https://horizonr.iris.a3n.fr:4433/pages/login.html
 
 ---
 
@@ -449,6 +571,9 @@ cd backend && npm test
 
 # Générer le rapport de couverture
 cd backend && npm run test:coverage
+
+# Lancer les tests d'intégration (nécessite docker-compose.test.yml démarré)
+cd backend && npm run test:integration
 ```
 
 Accès une fois démarré :
@@ -472,6 +597,6 @@ Accès une fois démarré :
 ## Compétences du référentiel BTS SIO mobilisées
 
 - **B1.3** — Développer la présence en ligne de l'organisation (frontend HTML/CSS/JS responsive)
-- **B2.2** — Réaliser les tests d'intégration et d'acceptation d'un service (Jest, rapport Istanbul)
+- **B2.2** — Réaliser les tests d'intégration et d'acceptation d'un service (Jest 189 tests unitaires + 30 tests d'intégration supertest, rapport Istanbul > 90 %)
 - **B3.1** — Concevoir et développer une solution applicative (architecture 3-tiers, MCD/MLD/MPD, API REST)
 - **B3.2** — Assurer la maintenance corrective et évolutive d'une solution applicative (RBAC, soft-delete, structure modulaire)
